@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>💊 Online Medicine Store</title>
+    <style>
+        body {
+          font-family: 'Segoe UI', sans-serif;
+          background-color: #f9f9f9;
+          margin: 0;
+          padding: 0;
+        }
+        header {
+          background-color: #0066cc;
+          color: white;
+          padding: 20px;
+          text-align: center;
+        }
+        .container {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+          gap: 20px;
+          padding: 30px;
+        }
+        .card {
+          background: white;
+          border-radius: 10px;
+          padding: 15px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          text-align: center;
+          position: relative;
+        }
+        .card img {
+          width: 120px;
+          height: 120px;
+          object-fit: contain;
+        }
+        .card h3 {
+          margin: 10px 0 5px;
+        }
+        .card p {
+          margin: 0;
+          color: #333;
+        }
+        .prescription-badge {
+          position: absolute;
+          top: 10px;
+          left: 10px;
+          background: crimson;
+          color: white;
+          font-size: 12px;
+          padding: 2px 6px;
+          border-radius: 4px;
+        }
+        .card button {
+          margin-top: 10px;
+          padding: 8px 12px;
+          border: none;
+          background: #0066cc;
+          color: white;
+          border-radius: 6px;
+          cursor: pointer;
+        }
+        .card button:hover {
+          background-color: #004080;
+        }
+        #cart {
+          position: fixed;
+          right: 0;
+          top: 0;
+          width: 300px;
+          height: 100%;
+          background: white;
+          border-left: 1px solid #ccc;
+          padding: 20px;
+          box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+          overflow-y: auto;
+        }
+        #cart h2 {
+          margin-top: 0;
+          color: #0066cc;
+        }
+        .cart-item {
+          border-bottom: 1px dashed #aaa;
+          margin-bottom: 10px;
+          padding-bottom: 8px;
+        }
+        .cart-item span {
+          float: right;
+          color: crimson;
+          cursor: pointer;
+        }
+        .total {
+          font-weight: bold;
+          margin-top: 15px;
+          color: #333;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>💊 Online Medicine Store</h1>
+</header>
+
+<div class="container" id="productContainer"></div>
+
+<div id="cart">
+    <h2>Your Cart</h2>
+    <div id="cartItems"></div>
+</div>
+
+<script>
+    const productContainer = document.getElementById('productContainer');
+    const cartItems = document.getElementById('cartItems');
+    let cart = [];
+
+    const loadMedicines = async () => {
+      const res = await fetch('/medicines');
+      const meds = await res.json();
+
+      meds.forEach(med => {
+        const card = document.createElement('div');
+        card.className = 'card';
+
+        card.innerHTML = `
+          ${med.prescriptionRequired ? '<div class="prescription-badge">Rx Only</div>' : ''}
+          <img src="${med.imageUrl || 'https://via.placeholder.com/120'}" alt="${med.name}" />
+          <h3>${med.name}</h3>
+          <p><strong>${med.brand}</strong></p>
+          <p>Type: ${med.type}</p>
+          <p>₹${med.price}</p>
+          <button onclick="addToCart(${med.id}, '${med.name}', ${med.price})">Add to Cart</button>
+        `;
+
+        productContainer.appendChild(card);
+      });
+    };
+
+    const addToCart = (id, name, price) => {
+      const existing = cart.find(item => item.id === id);
+      if (existing) {
+        existing.qty += 1;
+      } else {
+        cart.push({ id, name, price, qty: 1 });
+      }
+      renderCart();
+    };
+
+    const removeFromCart = (index) => {
+      if (cart[index].qty > 1) {
+        cart[index].qty -= 1;
+      } else {
+        cart.splice(index, 1);
+      }
+      renderCart();
+    };
+
+    const renderCart = () => {
+      cartItems.innerHTML = '';
+      let total = 0;
+
+      cart.forEach((item, index) => {
+        total += item.price * item.qty;
+
+        const div = document.createElement('div');
+        div.className = 'cart-item';
+        div.innerHTML = `
+          ${item.name} x ${item.qty} - ₹${item.price * item.qty}
+          <span onclick="removeFromCart(${index})">✖</span>
+        `;
+        cartItems.appendChild(div);
+      });
+
+      const totalDiv = document.createElement('div');
+      totalDiv.className = 'total';
+      totalDiv.innerText = 'Total: ₹' + total;
+      cartItems.appendChild(totalDiv);
+    };
+
+    loadMedicines();
+</script>
+
+</body>
+</html>
