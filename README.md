@@ -1,6 +1,6 @@
 # 💊 Medicine E-commerce App
 
-A simple medicine e-commerce REST API built using Java, Spring Boot, and H2 Database.
+This project is a **backend REST API** for an e-commerce application that manages user authentication and medicine inventory. Built using **Spring Boot**, it provides secure user registration and login using **JWT tokens**, and full **CRUD operations** for managing medicines. The app is lightweight, uses an **H2 in-memory database** for quick testing, and is ideal for learning how to structure real-world Spring Boot applications.
 
 ## 🔧 Tech Stack
 - Java
