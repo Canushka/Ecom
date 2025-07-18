@@ -1,5 +1,7 @@
 package com.example.Ecom.service;
 
+import com.example.Ecom.dto.LoginDTO;
+import com.example.Ecom.dto.UserDTO;
 import com.example.Ecom.model.User;
 import com.example.Ecom.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,22 +14,28 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private BCryptPasswordEncoder encoder;
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    public User register(@org.jetbrains.annotations.NotNull User user) {
-        if (userRepository.existsByEmail(user.getEmail())) {
-            throw new RuntimeException("User already exists");
+    public String registerUser(UserDTO userDTO) {
+        if (userRepository.existsById(userDTO.getEmail())) {
+            return "User already exists!";
         }
 
-        user.setPassword(encoder.encode(user.getPassword()));
-        return userRepository.save(user);
+        String encodedPassword = passwordEncoder.encode(userDTO.getPassword());
+        User user = new User(userDTO.getEmail(), userDTO.getName(), encodedPassword);
+        userRepository.save(user);
+        return "User registered successfully!";
     }
 
-    public boolean login(String email, String rawPassword) {
-        User user = userRepository.findById(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    public String loginUser(LoginDTO loginDTO) {
+        User user = userRepository.findById(loginDTO.getEmail()).orElse(null);
 
-        return encoder.matches(rawPassword, user.getPassword());
+        if (user == null) {
+            return "User not found!";
+        }
+
+        boolean passwordMatch = passwordEncoder.matches(loginDTO.getPassword(), user.getPassword());
+
+        return passwordMatch ? "Login successful!" : "Invalid credentials!";
     }
 }
