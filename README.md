@@ -64,4 +64,3 @@ To access the H2 Console:
 ```bash
 cd backend
 mvn spring-boot:run
-
